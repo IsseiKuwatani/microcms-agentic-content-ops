@@ -4,6 +4,8 @@ import { auditRecords } from "../scripts/microcms-audit.js";
 import { buildPlan } from "../scripts/agentic-plan.js";
 import { compactReport } from "../scripts/build-agentic-input.js";
 import { microcmsEndpoint } from "../scripts/lib/http.js";
+import { validateProposal } from "../scripts/validate-proposal.js";
+import { readJson } from "../scripts/lib/config.js";
 
 test("auditRecords finds missing metadata and duplicate slugs", () => {
   const result = auditRecords([
@@ -55,4 +57,15 @@ test("microCMS endpoint validation rejects credential exfiltration targets", () 
   assert.throws(() => microcmsEndpoint("attacker.example", "articles"), /microcms\.io/);
   assert.throws(() => microcmsEndpoint("example.microcms.io/path", "articles"), /hostname/);
   assert.throws(() => microcmsEndpoint("example.microcms.io", "articles/other"), /endpoint/);
+});
+
+test("proposal contract fails closed when human review is removed", () => {
+  const proposal = buildPlan({ report: { generatedAt: "2026-01-01", summary: { articles: 1 }, issues: [] }, strategy: {} });
+  assert.deepEqual(validateProposal(proposal), []);
+  proposal.actions[0].humanReview = false;
+  assert.ok(validateProposal(proposal).some((error) => error.includes("human-reviewed")));
+});
+
+test("optional JSON inputs can be absent without stopping the loop", async () => {
+  assert.equal(await readJson("this-file-does-not-exist.json", null), null);
 });

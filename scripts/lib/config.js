@@ -40,6 +40,7 @@ export function getConfig(env = process.env) {
     outputDir: path.resolve(root, settings.OUTPUT_DIR || "content-ops"),
     strategyPath: path.resolve(root, settings.STRATEGY_PATH || "content-ops/strategy.json"),
     ga4SnapshotPath: settings.GA4_SNAPSHOT_PATH ? path.resolve(root, settings.GA4_SNAPSHOT_PATH) : "",
+    keywordDataPath: path.resolve(root, settings.KEYWORD_DATA_PATH || "content-ops/keyword-evidence.json"),
     microcms: {
       serviceDomain: String(settings.MICROCMS_SERVICE_DOMAIN || "").replace(/^https?:\/\//, "").replace(/\/$/, ""),
       apiKey: settings.MICROCMS_READ_API_KEY || "",
@@ -51,11 +52,13 @@ export function getConfig(env = process.env) {
   };
 }
 
-export async function readJson(filePath, fallback = null) {
+const missingFallback = Symbol("missingFallback");
+
+export async function readJson(filePath, fallback = missingFallback) {
   try {
     return JSON.parse(await fs.readFile(filePath, "utf8"));
   } catch (error) {
-    if (error.code === "ENOENT" && fallback !== null) return fallback;
+    if (error.code === "ENOENT" && fallback !== missingFallback) return fallback;
     throw error;
   }
 }

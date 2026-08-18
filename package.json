@@ -18,8 +18,10 @@
   },
   "scripts": {
     "audit": "node scripts/microcms-audit.js",
+    "keyword:analyze": "node scripts/keyword-research.js",
     "agent:input": "node scripts/build-agentic-input.js",
     "agent:plan": "node scripts/agentic-plan.js",
+    "validate:proposal": "node scripts/validate-proposal.js",
     "public:check": "node scripts/public-safety-check.js",
     "test": "node --test",
     "check": "npm run public:check && npm test"

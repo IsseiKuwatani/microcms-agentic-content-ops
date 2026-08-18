@@ -18,6 +18,11 @@ if ($auditExitCode -eq 1) { throw "Audit failed before producing a report" }
 if ($auditExitCode -eq 2) { Write-Warning "Audit found critical issues; continuing to create a remediation proposal" }
 node scripts/build-agentic-input.js
 if ($LASTEXITCODE -ne 0) { throw "Input build exited with code $LASTEXITCODE" }
+if (Test-Path -LiteralPath "content-ops/keyword-evidence.json") {
+  node scripts/keyword-research.js
+  if ($LASTEXITCODE -eq 1) { throw "Keyword analysis failed before producing a report" }
+  if ($LASTEXITCODE -eq 2) { Write-Warning "Keyword evidence contains invalid records; continuing with valid records" }
+}
 node scripts/agentic-plan.js
 if ($LASTEXITCODE -ne 0) { throw "Plan generation exited with code $LASTEXITCODE" }
 

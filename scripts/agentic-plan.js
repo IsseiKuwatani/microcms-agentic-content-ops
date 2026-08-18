@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import crypto from "node:crypto";
 import path from "node:path";
 import { getConfig, ensureDir, readJson } from "./lib/config.js";
+import { validateProposal } from "./validate-proposal.js";
 
 function action(priority, type, title, reason, humanReview = true, evidence = []) {
   return { priority, type, title, reason, humanReview, status: "proposal", evidence };
@@ -19,11 +20,19 @@ function evidenceFor(issues, severities) {
     .map((item) => ({ severity: item.severity, code: item.code, recordId: item.recordId || null }));
 }
 
-export function buildPlan({ report, strategy = {}, ga4 = null }) {
+function analyticsIsFresh(ga4) {
+  if (!ga4 || !Number.isFinite(Number(ga4.freshnessHours)) || Number(ga4.freshnessHours) > 168) return false;
+  const generatedAt = Date.parse(ga4.generatedAt || "");
+  if (!Number.isFinite(generatedAt)) return false;
+  const ageHours = (Date.now() - generatedAt) / 3600000;
+  return ageHours >= 0 && ageHours <= 168;
+}
+
+export function buildPlan({ report, strategy = {}, ga4 = null, keywords = null }) {
   const actions = [];
   const summary = report?.summary || {};
   const issues = report?.issues || [];
-  const analyticsFresh = Boolean(ga4 && Number.isFinite(Number(ga4.freshnessHours)) && Number(ga4.freshnessHours) <= 168);
+  const analyticsFresh = analyticsIsFresh(ga4);
 
   if (summary.critical) actions.push(action("P0", "fix", "Resolve critical audit issues", "Critical site, content, or safety issues were detected.", true, evidenceFor(issues, ["critical"])));
   if (summary.high) actions.push(action("P1", "review", "Review high-priority content issues", "Required metadata, slugs, or content fields need a human-approved fix.", true, evidenceFor(issues, ["high"])));
@@ -35,6 +44,12 @@ export function buildPlan({ report, strategy = {}, ga4 = null }) {
   if (topicList.length) actions[actions.length - 1].topicCandidates = topicList.slice(0, 5);
   if (analyticsFresh && ga4.topPages?.length) actions.push(action("P1", "analytics", "Investigate top-page conversion paths", "A recent analytics snapshot contains high-traffic pages; compare engagement and CTA outcomes before editing."));
   if (ga4 && !analyticsFresh) actions.push(action("P2", "analytics", "Refresh the analytics snapshot", "The analytics snapshot is missing freshness metadata or is older than seven days; do not use it for prioritization."));
+  const keywordCandidates = (keywords?.opportunities || []).filter((item) => item.volumeStatus !== "unknown").slice(0, 5);
+  const staleKeywordCount = (keywords?.opportunities || []).filter((item) => item.freshness?.status === "stale").length;
+  if (staleKeywordCount) actions.push(action("P1", "keyword", "Refresh stale keyword evidence", "Some keyword metrics are older than the configured evidence window; refresh them before making publication decisions."));
+  if (keywordCandidates.length) {
+    actions.push(action("P1", "keyword", "Create briefs for evidence-backed keyword opportunities", "Use the supplied provider metrics as one prioritization signal; verify intent and existing coverage before drafting.", true, keywordCandidates.map((item) => ({ keyword: item.keyword, cluster: item.cluster, volumeStatus: item.volumeStatus, source: item.source, opportunityScore: item.opportunity?.score }))));
+  }
 
   const auditFingerprint = fingerprint(report);
   return {
@@ -45,7 +60,7 @@ export function buildPlan({ report, strategy = {}, ga4 = null }) {
     humanApprovalRequired: true,
     audit: { generatedAt: report?.generatedAt || null, fingerprint: auditFingerprint },
     approval: { status: "pending", approver: null, approvedAt: null, decisionNote: null },
-    source: { auditIssues: issues.length, strategyTopics: topicList.length, hasAnalyticsSnapshot: Boolean(ga4), analyticsFresh },
+    source: { auditIssues: issues.length, strategyTopics: topicList.length, hasAnalyticsSnapshot: Boolean(ga4), analyticsFresh, keywordCandidates: keywordCandidates.length, staleKeywordCount },
     actions
   };
 }
@@ -55,8 +70,11 @@ async function main() {
   const report = await readJson(path.join(config.outputDir, "reports", "seo-ops-audit.json"));
   const strategy = await readJson(config.strategyPath, { topics: config.topics });
   const ga4 = config.ga4SnapshotPath ? await readJson(config.ga4SnapshotPath, null) : null;
+  const keywords = await readJson(path.join(config.outputDir, "reports", "keyword-opportunities.json"), null);
   const outputPath = path.join(config.outputDir, "proposals", "next-actions.json");
-  const plan = buildPlan({ report, strategy, ga4 });
+  const plan = buildPlan({ report, strategy, ga4, keywords });
+  const validationErrors = validateProposal(plan);
+  if (validationErrors.length) throw new Error(`Generated proposal failed validation: ${validationErrors.join("; ")}`);
   await ensureDir(path.dirname(outputPath));
   await fs.writeFile(outputPath, `${JSON.stringify(plan, null, 2)}\n`, "utf8");
   console.log(JSON.stringify({ outputPath, actions: plan.actions.length, mode: plan.mode }, null, 2));

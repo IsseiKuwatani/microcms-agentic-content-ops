@@ -8,6 +8,7 @@ microCMSを使うサイト向けの、SEO・コンテンツ運用を支援する
 ## What it does
 
 - microCMS Content APIから記事・ブランド等のレコードを読み取り、欠落フィールド、重複slug、画像alt、危険な画像URL、更新日欠落を監査
+- Google Ads等のプロバイダー出力、Search Console出力、第三者推定値を出典付きで正規化し、キーワード機会を優先順位付け
 - サイトの死活を確認
 - 監査結果、サイト戦略、任意の集計済みアナリティクスから次の施策をproposal-onlyで作成
 - ローカルのCodex CLIから、最大2件の下書き提案を人間承認待ちで作成
@@ -19,6 +20,7 @@ microCMSを使うサイト向けの、SEO・コンテンツ運用を支援する
 Copy-Item .env.example .env
 # .env に SITE_URL、microCMSのサービスドメイン、MICROCMS_READ_API_KEYを設定
 npm run audit
+npm run keyword:analyze
 npm run agent:input
 npm run agent:plan
 ```
@@ -28,6 +30,7 @@ npm run agent:plan
 ```powershell
 $env:SITE_URL = "https://example.com"
 node scripts/microcms-audit.js --fixture examples/microcms-content.json
+node scripts/keyword-research.js --input examples/keyword-evidence.json
 node scripts/build-agentic-input.js
 node scripts/agentic-plan.js
 ```
@@ -44,6 +47,12 @@ Codex CLIをログイン済みの開発端末で実行する場合は、次を�
 
 既定モードはread-onlyです。提案ファイルを書かせる場合だけ、明示的に `-AllowWorkspaceWrite` を付けます。microCMSへの書き込み、デプロイ、GitHub pushはこのリポジトリから行いません。Windowsタスクスケジューラ等で無人実行する場合も、まずは人間が生成物をレビューする運用にしてください。
 
+## SEO skill and agent contracts
+
+`skills/seo-content-ops/` is a reusable Codex Skill for SEO audits, keyword evidence, content briefs, fact checks, and image review. The local development copy is installed as `$seo-content-ops`; copy the directory into your own Codex skills directory to enable it on another machine.
+
+`agents/` contains bounded role contracts for the SEO auditor, keyword researcher, fact checker, content planner, image reviewer, and release reviewer. They are intentionally provider-neutral: a runner can map each contract to its own subagent system, but no role is allowed to publish or use write-capable credentials.
+
 ## Human approval gate
 
 次の情報は、一次情報を確認した人の承認なしに公開しないでください。
@@ -58,6 +67,10 @@ Codex CLIをログイン済みの開発端末で実行する場合は、次を�
 ## Configuration
 
 The generic adapter recognizes `title/name`, `slug`, `content/description/body`, `updatedAt`, and `publishedAt`. Set the article and franchise endpoint names through environment variables when your microCMS schema differs.
+
+キーワード調査は `examples/keyword-evidence.json` の形式で取り込みます。検索ボリュームは入力されたプロバイダー値だけを使い、取得できない場合は `unknown` のままにします。`opportunity.score` は記事企画の優先順位付け専用で、検索順位や市場規模の予測ではありません。
+
+Google Ads APIの直接接続は認証情報と広告アカウント設定が必要なため、公開版は安全なエクスポート入力を標準にしています。接続アダプターを追加する場合も、OAuthやdeveloper tokenはGitHub・CMS・LLM入力に混ぜず、privateな実行環境で管理してください。
 
 設定例は `.env.example` を参照してください。記事・ブランドのフィールド名はサイトごとに異なるため、監査コードを拡張する場合も汎用的なルールとサイト固有のadapterを分離してください。
 

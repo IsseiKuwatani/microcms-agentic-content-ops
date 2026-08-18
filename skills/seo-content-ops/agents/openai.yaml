@@ -1,0 +1,5 @@
+interface:
+  display_name: "SEO Content Operations"
+  short_description: "SEO監査・キーワード調査・記事改善の標準運用ガイド"
+  default_prompt: "Use $seo-content-ops to audit SEO opportunities, research keywords, and prepare human-reviewed content proposals."
+  brand_color: "#2563EB"

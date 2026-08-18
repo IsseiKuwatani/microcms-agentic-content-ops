@@ -30,7 +30,9 @@ async function main() {
   const reportPath = path.join(config.outputDir, "reports", "seo-ops-audit.json");
   const outputPath = path.join(config.outputDir, "reports", "operator-input.json");
   const report = await readJson(reportPath);
+  const keywordReport = await readJson(path.join(config.outputDir, "reports", "keyword-opportunities.json"), null);
   const compact = compactReport(report);
+  compact.keywordOpportunities = (keywordReport?.opportunities || []).slice(0, 20).map((item) => ({ keyword: item.keyword, cluster: item.cluster, volumeStatus: item.volumeStatus, avgMonthlySearches: item.avgMonthlySearches, impressions: item.impressions, source: item.source, opportunity: item.opportunity }));
   await ensureDir(path.dirname(outputPath));
   await fs.writeFile(outputPath, `${JSON.stringify(compact, null, 2)}\n`, "utf8");
   console.log(JSON.stringify({ outputPath, issueCount: compact.issues.length }, null, 2));

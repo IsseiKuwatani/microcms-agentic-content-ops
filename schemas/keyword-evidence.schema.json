@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/IsseiKuwatani/microcms-agentic-content-ops/schemas/keyword-evidence.schema.json",
+  "type": "object",
+  "required": ["keywords"],
+  "properties": {
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["keyword", "source", "volumeStatus"],
+        "properties": {
+          "keyword": { "type": "string", "minLength": 1 },
+          "source": { "type": "string", "minLength": 1 },
+          "volumeStatus": { "enum": ["observed", "estimated", "unknown"] },
+          "avgMonthlySearches": { "type": "number", "minimum": 0 },
+          "impressions": { "type": "number", "minimum": 0 },
+          "locale": { "type": "string" },
+          "country": { "type": "string" },
+          "period": { "type": ["string", "null"] },
+          "retrievedAt": { "type": ["string", "null" ] }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

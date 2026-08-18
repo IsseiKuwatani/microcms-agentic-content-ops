@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/IsseiKuwatani/microcms-agentic-content-ops/schemas/proposal.schema.json",
+  "type": "object",
+  "required": ["schemaVersion", "proposalId", "generatedAt", "mode", "humanApprovalRequired", "audit", "approval", "actions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "proposalId": { "type": "string", "pattern": "^proposal-[a-f0-9]{16}$" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "mode": { "const": "proposal-only" },
+    "humanApprovalRequired": { "const": true },
+    "audit": {
+      "type": "object",
+      "required": ["generatedAt", "fingerprint"],
+      "properties": {
+        "generatedAt": { "type": ["string", "null"] },
+        "fingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "approval": {
+      "type": "object",
+      "required": ["status", "approver", "approvedAt", "decisionNote"],
+      "properties": {
+        "status": { "const": "pending" },
+        "approver": { "type": ["string", "null"] },
+        "approvedAt": { "type": ["string", "null"] },
+        "decisionNote": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "actions": { "type": "array", "items": { "$ref": "#/$defs/action" } }
+  },
+  "$defs": {
+    "action": {
+      "type": "object",
+      "required": ["priority", "type", "title", "reason", "humanReview", "status", "evidence"],
+      "properties": {
+        "priority": { "enum": ["P0", "P1", "P2", "P3"] },
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "reason": { "type": "string" },
+        "humanReview": { "const": true },
+        "status": { "const": "proposal" },
+        "evidence": { "type": "array" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,45 @@
+{
+  "keywords": [
+    {
+      "keyword": "example franchise cost",
+      "locale": "en-US",
+      "country": "US",
+      "source": "google-ads-keyword-planner-export",
+      "volumeStatus": "observed",
+      "avgMonthlySearches": 1000,
+      "competition": "MEDIUM",
+      "intent": "commercial",
+      "cluster": "franchise costs",
+      "businessFit": 0.9,
+      "period": "2026-01/2026-03",
+      "retrievedAt": "2026-04-01T00:00:00.000Z"
+    },
+    {
+      "keyword": "example gym opening guide",
+      "locale": "en-US",
+      "country": "US",
+      "source": "named-third-party-export",
+      "volumeStatus": "estimated",
+      "avgMonthlySearches": 500,
+      "competition": "LOW",
+      "intent": "informational",
+      "cluster": "opening a gym",
+      "businessFit": 0.7,
+      "period": "2026-Q1",
+      "retrievedAt": "2026-04-01T00:00:00.000Z",
+      "notes": "Provider estimate; do not present as observed market demand."
+    },
+    {
+      "keyword": "example local query",
+      "locale": "en-US",
+      "country": "US",
+      "source": "search-console-export",
+      "volumeStatus": "unknown",
+      "impressions": 25,
+      "clicks": 3,
+      "position": 8.4,
+      "intent": "informational",
+      "cluster": "local demand"
+    }
+  ]
+}

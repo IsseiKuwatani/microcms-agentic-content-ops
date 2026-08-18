@@ -3,6 +3,9 @@ node_modules/
 .env.*
 !.env.example
 content-ops/reports/
+content-ops/keyword-evidence.json
+content-ops/keyword-opportunities.json
+content-ops/reports/keyword-opportunities.json
 content-ops/drafts/*
 content-ops/proposals/*
 content-ops/review-queue.json
