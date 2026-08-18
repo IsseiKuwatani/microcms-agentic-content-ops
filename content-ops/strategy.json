@@ -1,0 +1,12 @@
+{
+  "siteName": "Replace with your site",
+  "language": "ja",
+  "topics": [],
+  "requiredHumanReview": [
+    "prices",
+    "contract terms",
+    "financial claims",
+    "legal or safety claims",
+    "brand assets"
+  ]
+}

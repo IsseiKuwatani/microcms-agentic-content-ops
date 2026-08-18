@@ -1,0 +1,17 @@
+{
+  "siteName": "Example site",
+  "language": "ja",
+  "topics": [
+    "opening a fitness business",
+    "how to compare franchise options",
+    "costs and operating requirements"
+  ],
+  "requiredHumanReview": [
+    "prices",
+    "royalties",
+    "contract terms",
+    "financial projections",
+    "brand assets",
+    "safety or legal claims"
+  ]
+}

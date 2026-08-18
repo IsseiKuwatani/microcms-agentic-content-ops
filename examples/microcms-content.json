@@ -1,0 +1,21 @@
+{
+  "articles": [
+    {
+      "id": "article-1",
+      "title": "How to compare franchise options",
+      "slug": "compare-franchises",
+      "content": "<p>Compare the investment assumptions, support, and operating requirements.</p>",
+      "publishedAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-10T00:00:00.000Z"
+    }
+  ],
+  "franchises": [
+    {
+      "id": "franchise-1",
+      "name": "Example Franchise",
+      "slug": "example-franchise",
+      "description": "An example record for local tests.",
+      "officialSiteUrl": "https://example.org/"
+    }
+  ]
+}
